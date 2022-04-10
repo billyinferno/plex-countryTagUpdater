@@ -6,7 +6,6 @@ created by : Adi Martha
 https://github.com/billyinferno
 '''
 
-from unittest import skip
 from plexapi.server import PlexServer
 from tmdbv3api import TMDb, TV
 from dotenv import load_dotenv
