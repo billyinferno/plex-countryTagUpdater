@@ -6,12 +6,13 @@ In case tha there are no country configured on TMDB result, it will be skipped, 
 
 ## How to use?
 
+### TV Shows Country Updater
+
 1. Copy .example.env to .env
 2. Edit .env and add all information needed there
 3. ```python3 updateLabel.py```
 
-
-### Arguments
+#### Arguments
 
 In case you didn't want to use .env file you can also passing arguments to the script
 
@@ -22,6 +23,39 @@ In case you didn't want to use .env file you can also passing arguments to the s
 * ```-clearscreen```
 
     clear the screen before run
+
+* ```-plextoken```
+
+    your PLEX token that will be used to connect to your PLEX server
+
+* ```-tmdbapikey```
+
+    your TMDB API Key that will be used to get information from TMDB
+
+* ```-baseurl```
+
+    your PLEX url (eg. 127.0.0.1:32400)
+
+* ```-library```
+    Your TV Shows library name, usually it will be defaulted as "TV Shows"
+
+### TV Shows Season Checker
+
+1. Copy .example.env to .env
+2. Edit .env and add all information needed there
+3. ```python3 checkTVShow.py```
+
+#### Arguments
+
+In case you didn't want to use .env file you can also passing arguments to the script
+
+* ```-showavailable```
+
+    This will add the Season that already available in your TV Shows library to the result
+
+* ```-showexception```
+
+    This will show the TV Shows that not found in TMDB (❗) or don't have any season information (⚠️) on TMDB
 
 * ```-plextoken```
 
