@@ -44,6 +44,24 @@ def connect():
     plex = PlexServer(baseurl, token)
     return plex
 
+def getCountries(countries):
+    countryLabel = []
+    if len(countries) > 0:
+        for country in countries:
+            # convert the alpha_2 country to actual country name
+            country_name = pycountry.countries.get(alpha_2=country)
+            name = country_name.name
+
+            # check if has common name, like South Korea?
+            # otherwise we will defaulted to name
+            if hasattr(country_name, 'common_name'):
+                name = country_name.common_name
+            
+            # append the country name
+            countryLabel.append("🌍 " + name)
+    # return the countryLabel
+    return countryLabel
+
 def getTvShow(plex, tmdb):
     skipped = 0
     updated = 0
@@ -56,10 +74,15 @@ def getTvShow(plex, tmdb):
     pBarShows = tqdm(tvShows)
     icon = ''
     for show in pBarShows:
+        # set the tmdbId as blank
+        tmdbId = ''
+        guids = show.guids
+        for guid in guids:
+            if guid.id[0:4].lower() == "tmdb":
+                tmdbId = guid.id[7:]
+
         # fetch the item from library
         item = plex.library.fetchItem(show.key)
-        #method_list = [func for func in dir(item) if callable(getattr(item, func))]
-        #pprint(method_list)
 
         isLabelExists = False
         currentLabel = []
@@ -79,31 +102,32 @@ def getTvShow(plex, tmdb):
             # first let's remove all the labels
             if len(currentLabel) > 0:
                 item.removeLabel(currentLabel)
-
-            s = tv.search(show.title)
+            
+            # initialize the variable
             isFind = False
             countryLabel = []
-            for result in s:
-                # check if the title is the same or not
-                if(show.title.lower() == result.name.lower()):
-                    # same title, means that we can get the original country
-                    countries = result.origin_country
-                    if len(countries) > 0:
-                        isFind = True
-                        for country in countries:
-                            # convert the alpha_2 country to actual country name
-                            country_name = pycountry.countries.get(alpha_2=country)
-                            name = country_name.name
 
-                            # check if has common name, like South Korea?
-                            # otherwise we will defaulted to name
-                            if hasattr(country_name, 'common_name'):
-                                name = country_name.common_name
-                            
-                            # append the country name
-                            countryLabel.append("🌍 " + name)
-                    # once found break from the loop
-                    break
+            # check whether we got tmdbId on the guids or not?
+            if len(tmdbId) > 0:
+                s = tv.details(tmdbId)
+                # if we got tmdbId means we can get exact record
+                countryLabel = getCountries(s.origin_country)
+                # check whether we got country label or not
+                if len(countryLabel) > 0:
+                    isFind = True
+            else:
+                s = tv.search(show.title)
+                # if we search we need to parse and see whether the search result has same name or not?
+                for result in s:
+                    # check if the title is the same or not
+                    if(show.title.lower() == result.name.lower()):
+                        # same title, means that we can get the original country
+                        countryLabel = getCountries(result.origin_country)
+                        # check whether we got country label or not
+                        if len(countryLabel) > 0:
+                            isFind = True
+                        # once found break from the loop
+                        break
             
             if not isFind:
                 # cannot find the show, so we update this with "Not Found"
@@ -116,7 +140,7 @@ def getTvShow(plex, tmdb):
                 icon = "✏️"
                 updated = updated + 1
 
-        pBarShows.set_description('{:50.50}'.format(icon + show.title))
+        pBarShows.set_description('{:50.50}'.format(icon + " " + show.title))
     
     # once finished showed the summary
     print("SUMMARY")
