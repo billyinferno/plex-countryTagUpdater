@@ -11,6 +11,7 @@ from tmdbv3api import TMDb, TV
 from dotenv import load_dotenv
 from pprint import pprint
 from tqdm import tqdm
+from prettytable import PrettyTable
 from os import getenv, system, name, path
 import pycountry
 import sys
@@ -76,7 +77,16 @@ def getTvShow(plex, tmdb):
     skipped = 0
     updated = 0
     notFound = 0
-    notFoundList = []
+
+    # initialize result variable
+    resultList = PrettyTable()
+    resultList.field_names = ["Show", "Country"]
+    resultList.align["Show"] = "l"
+    resultList.align["Country"] = "l"
+
+    notFoundList = PrettyTable()
+    notFoundList.field_names = ["Show"]
+    notFoundList.align["Show"] = "l"
 
     tv = TV()
     tvShows = plex.library.section(LIBRARY_NAME).search(title=None,sort="titleSort:asc")
@@ -151,12 +161,13 @@ def getTvShow(plex, tmdb):
                 # cannot find the show, so we update this with "Not Found"
                 icon = "🚫"
                 notFound = notFound + 1
-                notFoundList.append(show.title)
+                notFoundList.add_row([show.title])
             else:
                 # means we can update the label
                 item.addLabel(countryLabel)
                 icon = "✏️"
                 updated = updated + 1
+                resultList.add_row([show.title, countryLabel])
 
         pBarShows.set_description('{:50.50}'.format(icon + " " + show.title))
     
@@ -165,9 +176,9 @@ def getTvShow(plex, tmdb):
     print("-------")
     print("Skipped   : {}".format(skipped))
     print("Updated   : {}".format(updated))
+    print(resultList)
     print("Not Found : {}".format(notFound))
-    for showNotFound in notFoundList:
-        print(" 🚫 " + showNotFound)
+    print(notFoundList)
 
 def printHelp():
     helpString = """
