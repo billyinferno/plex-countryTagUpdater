@@ -1,0 +1,6 @@
+plexapi
+tmdbv3api
+python-dotenv
+tqdm
+prettytable
+pycountry
